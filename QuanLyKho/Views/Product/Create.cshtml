@@ -1,0 +1,22 @@
+﻿@model QuanLyKho.Models.Product
+@{
+    ViewBag.Title = "Thêm sản phẩm";
+}
+<h2>Thêm sản phẩm</h2>
+
+<form method="post" action="@Url.Action("Create")">
+    <div class="mb-3">
+        <label>Tên sản phẩm</label>
+        <input type="text" name="Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Số lượng</label>
+        <input type="number" name="Quantity" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Giá</label>
+        <input type="number" name="Price" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-success">Lưu</button>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Hủy</a>
+</form>

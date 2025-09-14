@@ -1,0 +1,40 @@
+﻿@model QuanLyKho.Models.User
+@{
+    ViewBag.Title = "Đăng ký";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4>Đăng ký tài khoản</h4>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+                    {
+                        <div class="mb-3">
+                            <label>Tên đăng nhập</label>
+                            @Html.TextBoxFor(m => m.Username, new { @class = "form-control" })
+                        </div>
+                        <div class="mb-3">
+                            <label>Mật khẩu</label>
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+                        </div>
+                        <div class="mb-3">
+                            <label>Vai trò</label>
+                            @Html.DropDownListFor(m => m.Role, new SelectList(new[] { "User", "Admin" }), new { @class = "form-select" })
+                        </div>
+                        <button type="submit" class="btn btn-success">Đăng ký</button>
+                        <a href="@Url.Action("Login","Account")" class="btn btn-link">Đăng nhập</a>
+                    }
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger mt-3">@ViewBag.Error</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

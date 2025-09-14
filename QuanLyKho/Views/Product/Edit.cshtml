@@ -1,0 +1,23 @@
+﻿@model QuanLyKho.Models.Product
+@{
+    ViewBag.Title = "Sửa sản phẩm";
+}
+<h2>Sửa sản phẩm</h2>
+
+<form method="post" action="@Url.Action("Edit")">
+    <input type="hidden" name="ProductID" value="@Model.ProductID" />
+    <div class="mb-3">
+        <label>Tên sản phẩm</label>
+        <input type="text" name="Name" value="@Model.Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Số lượng</label>
+        <input type="number" name="Quantity" value="@Model.Quantity" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Giá</label>
+        <input type="number" name="Price" value="@Model.Price" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Cập nhật</button>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Hủy</a>
+</form>
