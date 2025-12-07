@@ -1,0 +1,420 @@
+﻿@model IEnumerable<QL_Kho.Models.ViewModels.NhaCungCapSqlVM>
+
+@{
+    ViewBag.Title = "Quản lý Nhà cung cấp";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-truck text-primary"></i> Quản lý Nhà cung cấp
+    </h1>
+    <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+        <i class="fas fa-plus fa-sm"></i> Thêm nhà cung cấp mới
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng nhà cung cấp</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                    </div>
+                    <i class="fas fa-building fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Hoạt động</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(ncc => ncc.TrangThai == "HoatDong")</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Không hoạt động</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(ncc => ncc.TrangThai == "KhongHoatDong")</div>
+                    </div>
+                    <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">NCC mới (30 ngày)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(ncc => ncc.NgayTao.HasValue && ncc.NgayTao >= DateTime.Now.AddDays(-30))</div>
+                    </div>
+                    <i class="fas fa-star fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Suppliers Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách nhà cung cấp</h6>
+        <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Tìm kiếm nhà cung cấp..." style="width: 300px;">
+            <select id="filterStatus" class="form-select form-select-sm" style="width: 150px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="HoatDong">Hoạt động</option>
+                <option value="KhongHoatDong">Không hoạt động</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="suppliersTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã NCC</th>
+                        <th>Tên nhà cung cấp</th>
+                        <th>Địa chỉ</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
+                        <th>Số sản phẩm</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th width="150">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr data-status="@item.TrangThai">
+                            <td><span class="badge bg-secondary">@item.MaNCC</span></td>
+
+                            <td>
+                                <strong>@item.TenNCC</strong>
+                                @if (item.NgayTao.HasValue && item.NgayTao >= DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-info ms-2">Mới</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.DiaChi))
+                                {
+                                    <span>@(item.DiaChi.Length > 30 ? item.DiaChi.Substring(0, 30) + "..." : item.DiaChi)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.SDT))
+                                {
+                                    <span><i class="fas fa-phone text-success"></i> @item.SDT</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Email))
+                                {
+                                    <span><i class="fas fa-envelope text-primary"></i> @item.Email</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có</span>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary">@item.SoLuongSP SP</span>
+                            </td>
+
+                            <td>
+                                @if (item.NgayTao.HasValue)
+                                {
+                                    @item.NgayTao.Value.ToString("dd/MM/yyyy")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.TrangThai == "HoatDong")
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Không hoạt động</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info" onclick="viewSupplier('@item.MaNCC')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editSupplier('@item.MaNCC')" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteSupplier('@item.MaNCC', '@item.TenNCC')" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ADD SUPPLIER MODAL -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Thêm nhà cung cấp mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="addSupplierForm">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="TenNCC" placeholder="Nhập tên nhà cung cấp" required />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" name="DiaChi" placeholder="Nhập địa chỉ" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" name="SDT" placeholder="Nhập số điện thoại" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="Email" placeholder="Nhập email" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Lưu nhà cung cấp
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container for Dynamic Content -->
+<div id="modalContainer"></div>
+
+@section styles {
+    <style>
+        #suppliersTable tbody tr:hover {
+            background-color: #f8f9fc;
+            transform: scale(1.01);
+            transition: all 0.2s;
+        }
+
+        .border-left-primary {
+            border-left: 4px solid #4e73df !important;
+        }
+
+        .border-left-success {
+            border-left: 4px solid #1cc88a !important;
+        }
+
+        .border-left-warning {
+            border-left: 4px solid #f6c23e !important;
+        }
+
+        .border-left-info {
+            border-left: 4px solid #36b9cc !important;
+        }
+    </style>
+}
+
+@section scripts {
+    <script>
+        // Reset form when modal is closed
+        $('#addSupplierModal').on('hidden.bs.modal', function () {
+            $('#addSupplierForm')[0].reset();
+        });
+
+        // Search functionality
+        $('#searchInput').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('#suppliersTable tbody tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Filter by status
+        $('#filterStatus').on('change', function () {
+            var status = $(this).val();
+            if (status === '') {
+                $('#suppliersTable tbody tr').show();
+                return;
+            }
+
+            $('#suppliersTable tbody tr').each(function () {
+                $(this).toggle($(this).data('status') === status);
+            });
+        });
+
+        // Add supplier
+        $('#addSupplierForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var tenNCC = $('input[name="TenNCC"]').val().trim();
+            if (!tenNCC) {
+                alert('Vui lòng nhập tên nhà cung cấp!');
+                return;
+            }
+
+            var formData = {
+                TenNCC: tenNCC,
+                DiaChi: $('input[name="DiaChi"]').val(),
+                SDT: $('input[name="SDT"]').val(),
+                Email: $('input[name="Email"]').val()
+            };
+
+            var submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+
+            $.ajax({
+                url: '@Url.Action("ThemNhaCungCap", "Admin")',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu nhà cung cấp');
+
+                    if (response.success) {
+                        $('#addSupplierModal').modal('hide');
+                        alert('✓ ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('✗ Lỗi: ' + response.message);
+                    }
+                },
+                error: function (xhr) {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu nhà cung cấp');
+
+                    var errorMsg = 'Có lỗi xảy ra khi thêm nhà cung cấp!';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    alert('✗ ' + errorMsg);
+                }
+            });
+        });
+
+        // View supplier detail
+        function viewSupplier(maNCC) {
+            $.ajax({
+                url: '@Url.Action("ChiTietNhaCungCap", "Admin")',
+                type: 'GET',
+                data: { id: maNCC },
+                success: function (response) {
+                    $('#modalContainer').html(response);
+                    $('#detailModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải thông tin nhà cung cấp!');
+                }
+            });
+        }
+
+        // Edit supplier
+        function editSupplier(maNCC) {
+            $.ajax({
+                url: '@Url.Action("SuaNhaCungCap", "Admin")',
+                type: 'GET',
+                data: { id: maNCC },
+                success: function (response) {
+                    $('#modalContainer').html(response);
+                    $('#editModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải form chỉnh sửa!');
+                }
+            });
+        }
+
+        // Delete supplier
+        function deleteSupplier(maNCC, tenNCC) {
+            if (confirm('Bạn có chắc chắn muốn xóa nhà cung cấp "' + tenNCC + '" không?\n\nLưu ý: NCC sẽ bị vô hiệu hóa nếu đang có sản phẩm.')) {
+                $.ajax({
+                    url: '@Url.Action("XoaNhaCungCap", "Admin")',
+                    type: 'POST',
+                    data: { maNCC: maNCC },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('✓ ' + response.message);
+                            location.reload();
+                        } else {
+                            alert('✗ ' + response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMsg = 'Có lỗi xảy ra khi xóa nhà cung cấp!';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        alert('✗ ' + errorMsg);
+                    }
+                });
+            }
+        }
+
+        // Active menu highlighting
+        $(document).ready(function () {
+            $('.sidebar-menu a[href*="NhaCungCap"]').addClass('active');
+        });
+    </script>
+}

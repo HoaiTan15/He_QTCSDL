@@ -1,0 +1,452 @@
+﻿@model IEnumerable<QL_Kho.ViewModels.SanPhamSqlVM>
+
+@{
+    ViewBag.Title = "Quản lý Sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-box-open text-primary"></i> Quản lý Sản phẩm
+    </h1>
+    <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        <i class="fas fa-plus fa-sm"></i> Thêm sản phẩm mới
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng sản phẩm</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                    </div>
+                    <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Hoạt động</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(sp => sp.TrangThai == "HoatDong")</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Sắp hết hàng</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(sp => sp.SoLuongTon <= 10 && sp.SoLuongTon > 0)</div>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Hết hàng</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(sp => sp.SoLuongTon == 0)</div>
+                    </div>
+                    <i class="fas fa-ban fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách sản phẩm</h6>
+        <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Tìm kiếm sản phẩm..." style="width: 300px;">
+            <select id="filterStatus" class="form-select form-select-sm" style="width: 150px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="HoatDong">Hoạt động</option>
+                <option value="HetHang">Hết hàng</option>
+                <option value="KhongHoatDong">Không hoạt động</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="productsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th width="80">Hình ảnh</th>
+                        <th>Mã SP</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Đơn giá</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th width="150">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr data-status="@item.TrangThai">
+
+                            <td>
+                                <img src="~/Content/images/@item.HinhAnh"
+                                     class="img-thumbnail"
+                                     style="width: 50px; height: 50px; object-fit: cover;"
+                                     onerror="this.src='https://via.placeholder.com/50x50?text=N/A'" />
+                            </td>
+
+                            <td><span class="badge bg-secondary">@item.MaSP</span></td>
+
+                            <td>
+                                <strong>@item.TenSP</strong>
+                                @if (item.NgayTao.HasValue && item.NgayTao >= DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-info ms-2">Mới</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.TenDM))
+                                {
+                                    <span class="badge bg-primary">@item.TenDM</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+
+                            <td class="text-danger fw-bold">@String.Format("{0:N0}", item.DonGia) đ</td>
+
+                            <td>
+                                @if (item.SoLuongTon == 0)
+                                {
+                                    <span class="badge bg-danger">Hết hàng</span>
+                                }
+                                else if (item.SoLuongTon <= 10)
+                                {
+                                    <span class="badge bg-warning text-dark">@item.SoLuongTon</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">@item.SoLuongTon</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.TrangThai == "HoatDong")
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Hoạt động</span>
+                                }
+                                else if (item.TrangThai == "HetHang")
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-ban"></i> Hết hàng</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Không hoạt động</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info" onclick="viewProduct('@item.MaSP')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editProduct('@item.MaSP')" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteProduct('@item.MaSP', '@item.TenSP')" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Thêm sản phẩm mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="addProductForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Tên sản phẩm <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="TenSP" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Danh mục <span class="text-danger">*</span></label>
+                                <select class="form-control" name="MaDM" required>
+                                    <option value="">-- Chọn danh mục --</option>
+                                    @foreach (var dm in ViewBag.DanhMucList)
+                                    {
+                                        <option value="@dm.MaDM">@dm.TenDM</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Nhà cung cấp</label>
+                                <select class="form-control" name="MaNCC">
+                                    <option value="">-- Chọn nhà cung cấp --</option>
+                                    @foreach (var ncc in ViewBag.NhaCungCapList)
+                                    {
+                                        <option value="@ncc.MaNCC">@ncc.TenNCC</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Đơn vị tính <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="DonViTinh" placeholder="VD: Cái, Hộp, Kg..." required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Đơn giá <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="DonGia" min="0" step="1000" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Số lượng tồn</label>
+                                <input type="number" class="form-control" name="SoLuongTon" min="0" value="0" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mô tả</label>
+                        <textarea class="form-control" name="MoTa" rows="3" placeholder="Mô tả chi tiết về sản phẩm..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hình ảnh</label>
+                        <input type="file" class="form-control" name="HinhAnh" accept="image/*" />
+                        <small class="form-text text-muted">Chọn file ảnh định dạng JPG, PNG, GIF...</small>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Lưu sản phẩm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container for Dynamic Content -->
+<div id="modalContainer"></div>
+
+@section styles {
+    <style>
+        #productsTable tbody tr:hover {
+            background-color: #f8f9fc;
+            transform: scale(1.01);
+        }
+    </style>
+}
+
+@section scripts {
+    <script>
+
+// Reset form when modal is closed
+$('#addProductModal').on('hidden.bs.modal', function () {
+    $('#addProductForm')[0].reset();
+});
+
+$('#searchInput').on('keyup', function () {
+    var value = $(this).val().toLowerCase();
+    $('#productsTable tbody tr').filter(function () {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+    });
+});
+
+$('#filterStatus').on('change', function () {
+    var status = $(this).val();
+    if (status === '') { $('#productsTable tbody tr').show(); return; }
+
+    $('#productsTable tbody tr').each(function () {
+        $(this).toggle($(this).data('status') === status);
+    });
+});
+
+// Add product
+$('#addProductForm').on('submit', function (e) {
+    e.preventDefault();
+    
+    // Validation
+    var tenSP = $('input[name="TenSP"]').val().trim();
+    var maDM = $('select[name="MaDM"]').val();
+    var donGia = $('input[name="DonGia"]').val();
+    var donViTinh = $('input[name="DonViTinh"]').val().trim();
+    
+    if (!tenSP) {
+        alert('Vui lòng nhập tên sản phẩm!');
+        return;
+    }
+    
+    if (!maDM) {
+        alert('Vui lòng chọn danh mục!');
+        return;
+    }
+    
+    if (!donGia || donGia <= 0) {
+        alert('Vui lòng nhập đơn giá hợp lệ!');
+        return;
+    }
+    
+    if (!donViTinh) {
+        alert('Vui lòng nhập đơn vị tính!');
+        return;
+    }
+    
+    var formData = new FormData(this);
+    var submitBtn = $(this).find('button[type="submit"]');
+    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+
+    $.ajax({
+        url: '@Url.Action("ThemSanPham", "Admin")',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu sản phẩm');
+            
+            if (response.success) {
+                $('#addProductModal').modal('hide');
+                alert('✓ ' + response.message);
+                location.reload();
+            } else {
+                alert('✗ Lỗi: ' + response.message);
+            }
+        },
+        error: function (xhr, status, error) {
+            submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu sản phẩm');
+            
+            var errorMsg = 'Có lỗi xảy ra khi thêm sản phẩm!';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMsg = xhr.responseJSON.message;
+            } else if (xhr.responseText) {
+                errorMsg = xhr.responseText;
+            }
+            alert('✗ ' + errorMsg);
+            console.error('Error:', xhr, status, error);
+        }
+    });
+});
+
+// View product detail
+function viewProduct(maSP) {
+    $.ajax({
+        url: '@Url.Action("ChiTietSanPham", "Admin")',
+        type: 'GET',
+        data: { id: maSP },
+        success: function (response) {
+            $('#modalContainer').html(response);
+            $('#detailModal').modal('show');
+        },
+        error: function () {
+            alert('Không thể tải thông tin sản phẩm!');
+        }
+    });
+}
+
+// Edit product
+function editProduct(maSP) {
+    $.ajax({
+        url: '@Url.Action("SuaSanPham", "Admin")',
+        type: 'GET',
+        data: { id: maSP },
+        success: function (response) {
+            $('#modalContainer').html(response);
+            $('#editModal').modal('show');
+        },
+        error: function () {
+            alert('Không thể tải form chỉnh sửa!');
+        }
+    });
+}
+
+// Delete product
+function deleteProduct(maSP, tenSP) {
+    if (confirm('Bạn có chắc chắn muốn xóa sản phẩm "' + tenSP + '" không?')) {
+        $.ajax({
+            url: '@Url.Action("XoaSanPham", "Admin")',
+            type: 'POST',
+            data: { maSP: maSP },
+            success: function (response) {
+                if (response.success) {
+                    alert('✓ ' + response.message);
+                    location.reload();
+                } else {
+                    alert('✗ ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Có lỗi xảy ra khi xóa sản phẩm!');
+            }
+        });
+    }
+}
+
+    </script>
+}
+

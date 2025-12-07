@@ -1,0 +1,334 @@
+﻿@model IEnumerable<QL_Kho.Models.ViewModels.DonHangVM>
+
+@{
+    ViewBag.Title = "Quản lý Đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-shopping-cart text-primary"></i> Quản lý Đơn hàng
+    </h1>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng đơn hàng</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                    </div>
+                    <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Chờ xác nhận</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.TrangThai == "Chờ xác nhận")</div>
+                    </div>
+                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Đang giao</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.TrangThai == "Đang giao")</div>
+                    </div>
+                    <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Đã giao</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.TrangThai == "Đã giao")</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách đơn hàng</h6>
+        <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Tìm kiếm..." style="width: 250px;">
+            <select id="filterStatus" class="form-select form-select-sm" style="width: 150px;">
+                <option value="">Tất cả</option>
+                <option value="Chờ xác nhận">Chờ xác nhận</option>
+                <option value="Đã xác nhận">Đã xác nhận</option>
+                <option value="Đang giao">Đang giao</option>
+                <option value="Đã giao">Đã giao</option>
+                <option value="Đã hủy">Đã hủy</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="ordersTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã ĐH</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>PT Thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th width="200">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.OrderByDescending(o => o.NgayDat))
+                    {
+                        <tr data-status="@order.TrangThai">
+                            <td><span class="badge bg-secondary">@order.MaDH</span></td>
+                            <td>
+                                <strong>@order.TenNguoiDung</strong><br />
+                                <small class="text-muted">
+                                    <i class="fas fa-phone"></i> @order.SDT
+                                </small>
+                            </td>
+                            <td>
+                                @if (order.NgayDat.HasValue)
+                                {
+                                    @order.NgayDat.Value.ToString("dd/MM/yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+                            <td><strong class="text-danger">@String.Format("{0:N0}", order.TongTien) đ</strong></td>
+                            <td><span class="badge bg-info">@order.PhuongThucTT</span></td>
+                            <td>
+                                @switch (order.TrangThai)
+                                {
+                                    case "Chờ xác nhận":
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock"></i> @order.TrangThai
+                                        </span>
+                                        break;
+                                    case "Đã xác nhận":
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-check"></i> @order.TrangThai
+                                        </span>
+                                        break;
+                                    case "Đang giao":
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-shipping-fast"></i> @order.TrangThai
+                                        </span>
+                                        break;
+                                    case "Đã giao":
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> @order.TrangThai
+                                        </span>
+                                        break;
+                                    case "Đã hủy":
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle"></i> @order.TrangThai
+                                        </span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <!-- Nút Xem -->
+                                    <button class="btn btn-sm btn-info" onclick="xemChiTiet('@order.MaDH')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                    <!-- Nút Xác nhận (nếu Chờ xác nhận) -->
+                                    @if (order.TrangThai == "Chờ xác nhận")
+                                    {
+                                        <button class="btn btn-sm btn-success" onclick="capNhatTrangThai('@order.MaDH', 'Đã xác nhận')" title="Xác nhận">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+
+                                        <!-- ✅ NÚT HỦY -->
+                                        <button class="btn btn-sm btn-danger" onclick="huyDonHang('@order.MaDH')" title="Hủy đơn">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    }
+
+                                    <!-- Nút Giao hàng (nếu Đã xác nhận) -->
+                                    @if (order.TrangThai == "Đã xác nhận")
+                                    {
+                                        <button class="btn btn-sm btn-primary" onclick="capNhatTrangThai('@order.MaDH', 'Đang giao')" title="Giao hàng">
+                                            <i class="fas fa-shipping-fast"></i>
+                                        </button>
+                                    }
+
+                                    <!-- Nút Hoàn thành (nếu Đang giao) -->
+                                    @if (order.TrangThai == "Đang giao")
+                                    {
+                                        <button class="btn btn-sm btn-success" onclick="capNhatTrangThai('@order.MaDH', 'Đã giao')" title="Hoàn thành">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ QUAN TRỌNG: Modal Container -->
+<div class="modal fade" id="chiTietModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalContent">
+            <!-- Nội dung được load từ AJAX -->
+        </div>
+    </div>
+</div>
+
+@section styles {
+    <style>
+        #ordersTable tbody tr:hover {
+            background-color: #f8f9fc;
+            transition: all 0.2s;
+        }
+
+        .border-left-primary {
+            border-left: 4px solid #4e73df !important;
+        }
+
+        .border-left-success {
+            border-left: 4px solid #1cc88a !important;
+        }
+
+        .border-left-warning {
+            border-left: 4px solid #f6c23e !important;
+        }
+
+        .border-left-info {
+            border-left: 4px solid #36b9cc !important;
+        }
+    </style>
+}
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('DonHang.cshtml loaded');
+        });
+
+        // Tìm kiếm
+        $('#searchInput').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('#ordersTable tbody tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Lọc theo trạng thái
+        $('#filterStatus').on('change', function () {
+            var status = $(this).val();
+            if (status === '') {
+                $('#ordersTable tbody tr').show();
+                return;
+            }
+            $('#ordersTable tbody tr').each(function () {
+                $(this).toggle($(this).data('status') === status);
+            });
+        });
+
+        // ✅ Xem chi tiết đơn hàng
+        function xemChiTiet(maDH) {
+            console.log('Đang xem chi tiết đơn hàng:', maDH);
+
+            $.ajax({
+                url: '@Url.Action("ChiTietDonHang", "Admin")',
+                type: 'GET',
+                data: { id: maDH },
+                beforeSend: function() {
+                    $('#modalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i><p class="mt-3">Đang tải...</p></div>');
+                    $('#chiTietModal').modal('show');
+                },
+                success: function (response) {
+                    console.log('Tải thành công');
+                    $('#modalContent').html(response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi:', error);
+                    $('#modalContent').html('<div class="alert alert-danger m-3"><i class="fas fa-exclamation-circle"></i> Không thể tải thông tin đơn hàng!</div>');
+                }
+            });
+        }
+        // ✅ Hủy đơn hàng
+            function huyDonHang(maDH) {
+                if (confirm('Bạn có chắc chắn muốn HỦY đơn hàng này?\n\n Hành động này không thể hoàn tác!')) {
+                    $.ajax({
+                        url: '@Url.Action("HuyDonHang", "Admin")',
+                        type: 'POST',
+                        data: { maDH: maDH },
+                        success: function (response) {
+                            if (response.success) {
+                                alert('✓ ' + response.message);
+                                location.reload();
+                            } else {
+                                alert('✗ ' + response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('✗ Có lỗi xảy ra khi hủy đơn hàng!');
+                        }
+                    });
+                }
+            }
+        // Cập nhật trạng thái
+        function capNhatTrangThai(maDH, trangThai) {
+            var message = '';
+            switch(trangThai) {
+                case 'Đã xác nhận': message = 'Xác nhận đơn hàng này?'; break;
+                case 'Đang giao': message = 'Chuyển sang trạng thái đang giao?'; break;
+                case 'Đã giao': message = 'Xác nhận đã giao hàng thành công?'; break;
+            }
+
+            if (confirm(message)) {
+                $.ajax({
+                    url: '@Url.Action("CapNhatTrangThaiDonHang", "Admin")',
+                    type: 'POST',
+                    data: { maDH: maDH, trangThai: trangThai },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('✓ ' + response.message);
+                            location.reload();
+                        } else {
+                            alert('✗ ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('✗ Có lỗi xảy ra!');
+                    }
+                });
+            }
+        }
+    </script>
+}

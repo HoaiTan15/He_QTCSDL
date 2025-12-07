@@ -1,0 +1,80 @@
+﻿@model QL_Kho.Models.ViewModels.NhapHangVM
+@{
+    ViewBag.Title = "Nhập hàng";
+}
+
+<h2>Nhập hàng</h2>
+
+<div class="card p-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label>Nhà Cung Cấp</label>
+            <select id="MaNCC" class="form-control">
+                @foreach (var item in ViewBag.NCC)
+                {
+                    <option value="@item.MaNCC">@item.TenNCC</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <hr />
+
+    <table class="table table-bordered" id="tblNhapHang">
+        <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá nhập</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button class="btn btn-success" onclick="addRow()">+ Thêm SP</button>
+    <button class="btn btn-primary" onclick="submitNhapHang()">Nhập hàng</button>
+</div>
+
+<script>
+    function addRow() {
+        $("#tblNhapHang tbody").append(`
+            <tr>
+                <td>
+                    <select class="form-control sp">
+                        @foreach (var sp in ViewBag.SanPham)
+                        {
+                            <option value="@sp.MaSP">@sp.TenSP</option>
+                        }
+                    </select>
+                </td>
+                <td><input type="number" class="form-control sl" value="1"/></td>
+                <td><input type="number" class="form-control gia" value="10000"/></td>
+                <td><button class="btn btn-danger" onclick="$(this).closest('tr').remove()">X</button></td>
+            </tr>`);
+    }
+
+    function submitNhapHang() {
+        let items = [];
+
+        $("#tblNhapHang tbody tr").each(function () {
+            items.push({
+                MaSP: $(this).find(".sp").val(),
+                SoLuong: parseInt($(this).find(".sl").val()),
+                DonGiaNhap: parseFloat($(this).find(".gia").val())
+            });
+        });
+
+        $.ajax({
+            url: "/Admin/NhapHang",
+            type: "POST",
+            data: {
+                MaNCC: $("#MaNCC").val(),
+                ChiTietJson: JSON.stringify(items)
+            },
+            success: function (res) {
+                alert(res.message);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,150 @@
+﻿@model QL_Kho.Models.ViewModels.DanhMucSqlVM
+
+<!-- Modal Chi tiết danh mục -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle"></i> Chi tiết danh mục
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="~/Content/images/@Model.HinhAnh"
+                             class="img-fluid rounded border shadow-sm"
+                             style="max-height:300px; object-fit:cover; width: 100%;"
+                             onerror="this.src='https://via.placeholder.com/300x300?text=Danh+Muc'" />
+
+                        @if (Model.NgayTao.HasValue && Model.NgayTao >= DateTime.Now.AddDays(-7))
+                        {
+                            <div class="mt-2">
+                                <span class="badge bg-info">
+                                    <i class="fas fa-star"></i> Danh mục mới
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th width="150" class="text-muted">
+                                        <i class="fas fa-barcode"></i> Mã danh mục:
+                                    </th>
+                                    <td><span class="badge bg-secondary fs-6">@Model.MaDM</span></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">
+                                        <i class="fas fa-tag"></i> Tên danh mục:
+                                    </th>
+                                    <td><strong class="h5 text-primary">@Model.TenDM</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">
+                                        <i class="fas fa-boxes"></i> Số sản phẩm:
+                                    </th>
+                                    <td>
+                                        @if (Model.SoLuongSP > 0)
+                                        {
+                                            <span class="badge bg-primary fs-6">
+                                                <i class="fas fa-cube"></i> @Model.SoLuongSP sản phẩm
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-inbox"></i> Chưa có sản phẩm
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">
+                                        <i class="fas fa-toggle-on"></i> Trạng thái:
+                                    </th>
+                                    <td>
+                                        @if (Model.TrangThai == "HoatDong")
+                                        {
+                                            <span class="badge bg-success fs-6">
+                                                <i class="fas fa-check-circle"></i> Hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary fs-6">
+                                                <i class="fas fa-times-circle"></i> Không hoạt động
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">
+                                        <i class="fas fa-calendar-plus"></i> Ngày tạo:
+                                    </th>
+                                    <td>
+                                        @if (Model.NgayTao.HasValue)
+                                        {
+                                            <span class="text-dark">
+                                                <i class="far fa-clock"></i>
+                                                @Model.NgayTao.Value.ToString("dd/MM/yyyy HH:mm")
+                                            </span>
+                                            <small class="text-muted ms-2">
+                                                (@Math.Floor((DateTime.Now - Model.NgayTao.Value).TotalDays) ngày trước)
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        @if (!string.IsNullOrEmpty(Model.MoTa))
+                        {
+                            <div class="mt-3">
+                                <h6 class="text-muted">
+                                    <i class="fas fa-align-left"></i> Mô tả danh mục:
+                                </h6>
+                                <div class="border rounded p-3 bg-light mt-2">
+                                    <p class="mb-0">@Model.MoTa</p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i>
+                                Chưa có mô tả cho danh mục này.
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.SoLuongSP > 0)
+                {
+                    <hr class="my-4" />
+                    <div class="alert alert-success">
+                        <i class="fas fa-chart-line"></i>
+                        <strong>Thống kê:</strong> Danh mục này đang quản lý <strong>@Model.SoLuongSP sản phẩm</strong> hoạt động.
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-warning" onclick="editCategory('@Model.MaDM'); $('#detailModal').modal('hide');">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

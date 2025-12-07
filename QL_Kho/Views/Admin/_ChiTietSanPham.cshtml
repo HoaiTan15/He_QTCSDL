@@ -1,0 +1,130 @@
+﻿@model QL_Kho.ViewModels.SanPhamSqlVM
+
+<!-- Modal Chi tiết sản phẩm -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle"></i> Chi tiết sản phẩm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="~/Content/images/@Model.HinhAnh"
+                             class="img-fluid rounded border"
+                             style="max-height:250px; object-fit:cover;"
+                             onerror="this.src='https://via.placeholder.com/250x250?text=No+Image'" />
+                    </div>
+
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="150">Mã SP:</th>
+                                <td><span class="badge bg-secondary">@Model.MaSP</span></td>
+                            </tr>
+                            <tr>
+                                <th>Tên sản phẩm:</th>
+                                <td><strong>@Model.TenSP</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Danh mục:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.TenDM))
+                                    {
+                                        <span class="badge bg-primary">@Model.TenDM</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa phân loại</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Nhà cung cấp:</th>
+                                <td>@(Model.TenNCC ?? "Chưa có")</td>
+                            </tr>
+                            <tr>
+                                <th>Đơn giá:</th>
+                                <td><span class="text-danger fw-bold">@String.Format("{0:N0}", Model.DonGia) đ</span></td>
+                            </tr>
+                            <tr>
+                                <th>Đơn vị tính:</th>
+                                <td>@Model.DonViTinh</td>
+                            </tr>
+                            <tr>
+                                <th>Tồn kho:</th>
+                                <td>
+                                    @if (Model.SoLuongTon == 0)
+                                    {
+                                        <span class="badge bg-danger">Hết hàng</span>
+                                    }
+                                    else if (Model.SoLuongTon <= 10)
+                                    {
+                                        <span class="badge bg-warning text-dark">@Model.SoLuongTon</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">@Model.SoLuongTon</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Trạng thái:</th>
+                                <td>
+                                    @if (Model.TrangThai == "HoatDong")
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Hoạt động</span>
+                                    }
+                                    else if (Model.TrangThai == "HetHang")
+                                    {
+                                        <span class="badge bg-danger"><i class="fas fa-ban"></i> Hết hàng</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Không hoạt động</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Ngày tạo:</th>
+                                <td>
+                                    @if (Model.NgayTao.HasValue)
+                                    {
+                                        @Model.NgayTao.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+
+                        @if (!string.IsNullOrEmpty(Model.MoTa))
+                        {
+                            <div class="mt-3">
+                                <strong>Mô tả sản phẩm:</strong>
+                                <div class="border rounded p-3 bg-light mt-2">
+                                    @Model.MoTa
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-warning" onclick="editProduct('@Model.MaSP')">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

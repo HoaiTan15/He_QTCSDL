@@ -1,0 +1,394 @@
+﻿@model IEnumerable<QL_Kho.Models.ViewModels.DanhMucSqlVM>
+
+@{
+    ViewBag.Title = "Quản lý Danh mục";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-th-large text-primary"></i> Quản lý Danh mục
+    </h1>
+    <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <i class="fas fa-plus fa-sm"></i> Thêm danh mục mới
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng danh mục</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                    </div>
+                    <i class="fas fa-list fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Hoạt động</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(dm => dm.TrangThai == "HoatDong")</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Không hoạt động</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(dm => dm.TrangThai == "KhongHoatDong")</div>
+                    </div>
+                    <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Danh mục mới (30 ngày)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(dm => dm.NgayTao.HasValue && dm.NgayTao >= DateTime.Now.AddDays(-30))</div>
+                    </div>
+                    <i class="fas fa-star fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách danh mục</h6>
+        <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Tìm kiếm danh mục..." style="width: 300px;">
+            <select id="filterStatus" class="form-select form-select-sm" style="width: 150px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="HoatDong">Hoạt động</option>
+                <option value="KhongHoatDong">Không hoạt động</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="categoriesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th width="80">Hình ảnh</th>
+                        <th>Mã DM</th>
+                        <th>Tên danh mục</th>
+                        <th>Mô tả</th>
+                        <th>Số sản phẩm</th>
+                        <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
+                        <th width="150">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr data-status="@item.TrangThai">
+                            <td>
+                                <img src="~/Content/images/@item.HinhAnh"
+                                     class="img-thumbnail"
+                                     style="width: 50px; height: 50px; object-fit: cover;"
+                                     onerror="this.src='https://via.placeholder.com/50x50?text=DM'" />
+                            </td>
+
+                            <td><span class="badge bg-secondary">@item.MaDM</span></td>
+
+                            <td>
+                                <strong>@item.TenDM</strong>
+                                @if (item.NgayTao.HasValue && item.NgayTao >= DateTime.Now.AddDays(-7))
+                                {
+                                    <span class="badge bg-info ms-2">Mới</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.MoTa))
+                                {
+                                    <span>@(item.MoTa.Length > 50 ? item.MoTa.Substring(0, 50) + "..." : item.MoTa)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có mô tả</span>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary">@item.SoLuongSP SP</span>
+                            </td>
+
+                            <td>
+                                @if (item.NgayTao.HasValue)
+                                {
+                                    @item.NgayTao.Value.ToString("dd/MM/yyyy")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.TrangThai == "HoatDong")
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Không hoạt động</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info" onclick="viewCategory('@item.MaDM')" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="editCategory('@item.MaDM')" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCategory('@item.MaDM', '@item.TenDM')" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ADD CATEGORY MODAL -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Thêm danh mục mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="addCategoryForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="TenDM" placeholder="Nhập tên danh mục" required />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" name="MoTa" rows="3" placeholder="Mô tả chi tiết về danh mục..."></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Hình ảnh</label>
+                        <input type="file" class="form-control" name="HinhAnh" accept="image/*" />
+                        <small class="form-text text-muted">Chọn file ảnh định dạng JPG, PNG, GIF...</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Lưu danh mục
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container for Dynamic Content -->
+<div id="modalContainer"></div>
+
+@section styles {
+    <style>
+        #categoriesTable tbody tr:hover {
+            background-color: #f8f9fc;
+            transform: scale(1.01);
+            transition: all 0.2s;
+        }
+
+        .border-left-primary {
+            border-left: 4px solid #4e73df !important;
+        }
+
+        .border-left-success {
+            border-left: 4px solid #1cc88a !important;
+        }
+
+        .border-left-warning {
+            border-left: 4px solid #f6c23e !important;
+        }
+
+        .border-left-info {
+            border-left: 4px solid #36b9cc !important;
+        }
+    </style>
+}
+
+@section scripts {
+    <script>
+        // Reset form when modal is closed
+        $('#addCategoryModal').on('hidden.bs.modal', function () {
+            $('#addCategoryForm')[0].reset();
+        });
+
+        // Search functionality
+        $('#searchInput').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('#categoriesTable tbody tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Filter by status
+        $('#filterStatus').on('change', function () {
+            var status = $(this).val();
+            if (status === '') {
+                $('#categoriesTable tbody tr').show();
+                return;
+            }
+
+            $('#categoriesTable tbody tr').each(function () {
+                $(this).toggle($(this).data('status') === status);
+            });
+        });
+
+        // Add category
+        $('#addCategoryForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var tenDM = $('input[name="TenDM"]').val().trim();
+            if (!tenDM) {
+                alert('Vui lòng nhập tên danh mục!');
+                return;
+            }
+
+            var formData = new FormData(this);
+            var submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+
+            $.ajax({
+                url: '@Url.Action("ThemDanhMuc", "Admin")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu danh mục');
+
+                    if (response.success) {
+                        $('#addCategoryModal').modal('hide');
+                        alert('✓ ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('✗ Lỗi: ' + response.message);
+                    }
+                },
+                error: function (xhr) {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu danh mục');
+
+                    var errorMsg = 'Có lỗi xảy ra khi thêm danh mục!';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        errorMsg = xhr.responseText;
+                    }
+                    alert('✗ ' + errorMsg);
+                    console.error('Error:', xhr);
+                }
+            });
+        });
+
+        // View category detail
+        function viewCategory(maDM) {
+            $.ajax({
+                url: '@Url.Action("ChiTietDanhMuc", "Admin")',
+                type: 'GET',
+                data: { id: maDM },
+                success: function (response) {
+                    $('#modalContainer').html(response);
+                    $('#detailModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải thông tin danh mục!');
+                }
+            });
+        }
+
+        // Edit category
+        function editCategory(maDM) {
+            $.ajax({
+                url: '@Url.Action("SuaDanhMuc", "Admin")',
+                type: 'GET',
+                data: { id: maDM },
+                success: function (response) {
+                    $('#modalContainer').html(response);
+                    $('#editModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải form chỉnh sửa!');
+                }
+            });
+        }
+
+        // Delete category
+        function deleteCategory(maDM, tenDM) {
+            if (confirm('Bạn có chắc chắn muốn xóa danh mục "' + tenDM + '" không?\n\nLưu ý: Danh mục sẽ bị vô hiệu hóa nếu đang có sản phẩm.')) {
+                $.ajax({
+                    url: '@Url.Action("XoaDanhMuc", "Admin")',
+                    type: 'POST',
+                    data: { maDM: maDM },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('✓ ' + response.message);
+                            location.reload();
+                        } else {
+                            alert('✗ ' + response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMsg = 'Có lỗi xảy ra khi xóa danh mục!';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        alert('✗ ' + errorMsg);
+                    }
+                });
+            }
+        }
+
+        // Active menu highlighting
+        $(document).ready(function () {
+            $('.sidebar-menu a[href*="DanhMuc"]').addClass('active');
+        });
+    </script>
+}

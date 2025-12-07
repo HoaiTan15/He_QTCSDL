@@ -1,0 +1,241 @@
+﻿@model QL_Kho.Models.ViewModels.DanhMucSqlVM
+
+<!-- Modal Sửa danh mục -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i> Chỉnh sửa danh mục
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="editCategoryForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="MaDM" value="@Model.MaDM" />
+                    <input type="hidden" name="HinhAnh" value="@Model.HinhAnh" />
+
+                    <!-- Mã danh mục (không cho sửa) -->
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-barcode"></i> Mã danh mục
+                        </label>
+                        <input type="text" class="form-control bg-light" value="@Model.MaDM" disabled />
+                        <small class="text-muted">
+                            <i class="fas fa-lock"></i> Mã danh mục không thể thay đổi
+                        </small>
+                    </div>
+
+                    <!-- Tên danh mục -->
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-tag"></i> Tên danh mục <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="TenDM" class="form-control" value="@Model.TenDM"
+                               placeholder="Nhập tên danh mục" required maxlength="100" />
+                        <div class="invalid-feedback">
+                            Vui lòng nhập tên danh mục!
+                        </div>
+                    </div>
+
+                    <!-- Mô tả -->
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-align-left"></i> Mô tả
+                        </label>
+                        <textarea class="form-control" name="MoTa" rows="4"
+                                  placeholder="Mô tả chi tiết về danh mục..." maxlength="255">@Model.MoTa</textarea>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> Tối đa 255 ký tự
+                        </small>
+                    </div>
+
+                    <div class="row">
+                        <!-- Trạng thái -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-toggle-on"></i> Trạng thái <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control" name="TrangThai" required>
+                                    <option value="HoatDong" @(Model.TrangThai == "HoatDong" ? "selected" : "")>
+                                        ✓ Hoạt động
+                                    </option>
+                                    <option value="KhongHoatDong" @(Model.TrangThai == "KhongHoatDong" ? "selected" : "")>
+                                        ✗ Không hoạt động
+                                    </option>
+                                </select>
+                                @if (Model.SoLuongSP > 0)
+                                {
+                                    <small class="text-warning d-block mt-1">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Danh mục đang có <strong>@Model.SoLuongSP sản phẩm</strong> hoạt động
+                                    </small>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Ngày tạo (chỉ hiển thị) -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calendar-plus"></i> Ngày tạo
+                                </label>
+                                <input type="text" class="form-control bg-light"
+                                       value="@(Model.NgayTao?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")" disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hình ảnh -->
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-image"></i> Hình ảnh
+                        </label>
+
+                        <div class="mb-3">
+                            <div class="border rounded p-2 bg-light d-inline-block">
+                                <img src="~/Content/images/@Model.HinhAnh"
+                                     id="currentImage"
+                                     class="img-thumbnail"
+                                     style="width: 150px; height: 150px; object-fit:cover;"
+                                     onerror="this.src='https://via.placeholder.com/150x150?text=DM'" />
+                            </div>
+                            <div class="d-inline-block ms-2 align-top">
+                                <p class="mb-1 text-muted">
+                                    <i class="fas fa-file-image"></i> Hình ảnh hiện tại
+                                </p>
+                                <small class="text-muted">@Model.HinhAnh</small>
+                            </div>
+                        </div>
+
+                        <input type="file" name="HinhAnh" id="newImageInput" class="form-control" accept="image/*" />
+                        <small class="form-text text-muted d-block mt-1">
+                            <i class="fas fa-info-circle"></i>
+                            Chọn file ảnh mới nếu muốn thay đổi (JPG, PNG, GIF...). Bỏ trống nếu giữ nguyên.
+                        </small>
+                    </div>
+
+                    <!-- Preview ảnh mới -->
+                    <div id="imagePreview" class="mb-3" style="display: none;">
+                        <label class="form-label fw-bold text-success">
+                            <i class="fas fa-eye"></i> Xem trước ảnh mới:
+                        </label>
+                        <div class="border rounded p-2 bg-light d-inline-block">
+                            <img id="previewImg" class="img-thumbnail"
+                                 style="width: 150px; height: 150px; object-fit:cover;" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Preview ảnh trước khi upload
+    $('#newImageInput').on('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#previewImg').attr('src', e.target.result);
+                $('#imagePreview').show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#imagePreview').hide();
+        }
+    });
+
+    // Submit form
+    $('#editCategoryForm').on('submit', function (e) {
+        e.preventDefault();
+
+        // Validation
+        var tenDM = $('input[name="TenDM"]').val().trim();
+        if (!tenDM) {
+            alert('Vui lòng nhập tên danh mục!');
+            $('input[name="TenDM"]').focus();
+            return;
+        }
+
+        var formData = new FormData(this);
+        var submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...');
+
+        $.ajax({
+            url: '@Url.Action("CapNhatDanhMuc", "Admin")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
+
+                if (response.success) {
+                    $('#editModal').modal('hide');
+                    alert('✓ ' + response.message);
+                    location.reload();
+                } else {
+                    alert('✗ Lỗi: ' + response.message);
+                }
+            },
+            error: function (xhr) {
+                submitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
+
+                var errorMsg = 'Có lỗi xảy ra khi cập nhật danh mục!';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    errorMsg = xhr.responseText;
+                }
+                alert('✗ ' + errorMsg);
+                console.error('Error:', xhr);
+            }
+        });
+    });
+
+    // Reset preview khi đóng modal
+    $('#editModal').on('hidden.bs.modal', function () {
+        $('#imagePreview').hide();
+        $('#newImageInput').val('');
+    });
+</script>
+
+<style>
+    .form-label.fw-bold {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+
+    #imagePreview {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

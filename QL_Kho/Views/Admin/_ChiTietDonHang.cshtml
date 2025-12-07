@@ -1,0 +1,74 @@
+﻿@model List<QL_Kho.Models.ViewModels.ChiTietDonHangViewModel>
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+        <i class="fas fa-list-alt"></i> Chi tiết đơn hàng
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> Không có sản phẩm nào
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th width="80">Ảnh</th>
+                        <th>Sản phẩm</th>
+                        <th width="100">Số lượng</th>
+                        <th width="150">Đơn giá</th>
+                        <th width="150">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="~/Content/images/@item.HinhAnh"
+                                     width="60"
+                                     class="rounded border"
+                                     onerror="this.src='https://via.placeholder.com/60x60?text=SP'" />
+                            </td>
+                            <td>
+                                <strong>@item.TenSP</strong><br />
+                                <small class="text-muted">Mã SP: @item.MaSP</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">@item.SoLuong</span>
+                            </td>
+                            <td class="text-end">@String.Format("{0:N0}", item.DonGia) đ</td>
+                            <td class="text-end fw-bold text-danger">
+                                @String.Format("{0:N0}", item.ThanhTien ?? 0) đ
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold">TỔNG CỘNG:</td>
+                        <td class="text-end fw-bold text-danger fs-5">
+                            @String.Format("{0:N0}", Model.Sum(x => x.ThanhTien ?? 0)) đ
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Đóng
+    </button>
+    <button class="btn btn-primary" onclick="window.print()">
+        <i class="fas fa-print"></i> In đơn hàng
+    </button>
+</div>
